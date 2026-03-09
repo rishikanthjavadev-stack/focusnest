@@ -1,0 +1,48 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/focusnest?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    username: focusnest_dev
+    password: FocusNest@Dev2025!
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID:placeholder}
+            client-secret: ${GOOGLE_CLIENT_SECRET:placeholder}
+            scope: email, profile
+            redirect-uri: "{baseUrl}/oauth2/callback/{registrationId}"
+          github:
+            client-id: ${GITHUB_CLIENT_ID:placeholder}
+            client-secret: ${GITHUB_CLIENT_SECRET:placeholder}
+            scope: user:email
+            redirect-uri: "{baseUrl}/oauth2/callback/{registrationId}"
+
+jwt:
+  secret: "focusnest-super-secret-key-min-256bits-change-in-production-2025!!"
+  expiration: 900000
+  refresh-expiration: 604800000
+
+app:
+  frontend-url: http://localhost:3000
+  cors-origins: "http://localhost:3000"
+
+logging:
+  level:
+    com.focusnest: DEBUG
+    org.springframework.security: INFO
