@@ -1,6 +1,9 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useRouter } from 'next/navigation';
+import dynamic from 'next/dynamic';
+
+const PomodoroTimer = dynamic(() => import('@/components/PomodoroTimer'), { ssr: false });
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -20,7 +23,7 @@ export default function DashboardPage() {
       const raw = localStorage.getItem('fn_user');
       if (raw) {
         const u = JSON.parse(raw);
-        setName(u.name  || '');
+        setName(u.name || '');
         setEmail(u.email || '');
       }
     } catch {}
@@ -33,8 +36,8 @@ export default function DashboardPage() {
   const logout = () => { localStorage.clear(); router.push('/login'); };
 
   if (!ready) return (
-    <div style={{ minHeight:'100vh', background:'#0c0f0a',
-      display:'flex', alignItems:'center', justifyContent:'center', fontSize:'32px' }}>🪺</div>
+    <div style={{ minHeight: '100vh', background: '#0c0f0a',
+      display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '32px' }}>🪺</div>
   );
 
   const hour = time.getHours();
@@ -42,71 +45,91 @@ export default function DashboardPage() {
   const firstName = name ? (name.includes(' ') ? name.split(' ')[0] : name) : 'there';
 
   return (
-    <div style={{ minHeight:'100vh', background:'#0c0f0a',
-      fontFamily:"'Outfit', sans-serif", color:'#e8e0cc' }}>
+    <div style={{ minHeight: '100vh', background: '#0c0f0a',
+      fontFamily: "'Outfit', sans-serif", color: '#e8e0cc' }}>
 
       {/* Top bar */}
-      <div style={{ background:'#141710', borderBottom:'1px solid #252b1f',
-        padding:'16px 28px', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
-        <div style={{ display:'flex', alignItems:'center', gap:'10px' }}>
-          <div style={{ width:'32px', height:'32px', borderRadius:'8px',
-            background:'linear-gradient(135deg,#4a7c59,#8fad7c)',
-            display:'flex', alignItems:'center', justifyContent:'center', fontSize:'16px' }}>🪺</div>
-          <span style={{ fontFamily:"'Fraunces', serif", fontSize:'17px', fontWeight:'700' }}>FocusNest</span>
+      <div style={{ background: '#141710', borderBottom: '1px solid #252b1f',
+        padding: '14px 28px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <div style={{ width: '30px', height: '30px', borderRadius: '8px',
+            background: 'linear-gradient(135deg,#4a7c59,#8fad7c)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '15px' }}>🪺</div>
+          <span style={{ fontFamily: "'Fraunces', serif", fontSize: '16px', fontWeight: '700' }}>FocusNest</span>
         </div>
-        <div style={{ fontFamily:"'DM Mono', monospace", fontSize:'22px', color:'#6db882' }}>
-          {time.toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' })}
+        <div style={{ fontFamily: "'DM Mono', monospace", fontSize: '20px', color: '#6db882' }}>
+          {time.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
         </div>
-        <div style={{ display:'flex', alignItems:'center', gap:'12px' }}>
-          {email && <span style={{ fontSize:'13px', color:'#5a6355' }}>{email}</span>}
-          <button onClick={logout} style={{ padding:'8px 16px', borderRadius:'8px',
-            background:'transparent', border:'1px solid #252b1f',
-            color:'#5a6355', cursor:'pointer', fontSize:'13px' }}>Sign out</button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          {email && <span style={{ fontSize: '12px', color: '#5a6355' }}>{email}</span>}
+          <button onClick={logout} style={{ padding: '7px 14px', borderRadius: '8px',
+            background: 'transparent', border: '1px solid #252b1f',
+            color: '#5a6355', cursor: 'pointer', fontSize: '12px' }}>Sign out</button>
         </div>
       </div>
 
-      {/* Content */}
-      <div style={{ padding:'32px 28px' }}>
-        <h1 style={{ fontFamily:"'Fraunces', serif", fontSize:'28px',
-          fontWeight:'700', marginBottom:'6px' }}>
-          {greeting}, {firstName} 👋
-        </h1>
-        <p style={{ color:'#5a6355', fontSize:'14px', marginBottom:'32px' }}>
-          Build your focus. Grow your skills.
-        </p>
+      {/* Two column layout */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 400px',
+        gap: '0', minHeight: 'calc(100vh - 58px)' }}>
 
-        <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(200px, 1fr))',
-          gap:'16px', marginBottom:'32px' }}>
-          {[
-            { icon:'⏱', label:"Today's Study", value:'0h 0m',  color:'#6db882' },
-            { icon:'🔥', label:'Day Streak',    value:'0 days', color:'#d4872a' },
-            { icon:'✅', label:'Sessions Done', value:'0 / 0',  color:'#8fad7c' },
-            { icon:'🎯', label:'Goal Progress', value:'0%',     color:'#4a9ead' },
-          ].map(card => (
-            <div key={card.label} style={{ background:'#1a1e16', borderRadius:'12px',
-              padding:'20px', border:'1px solid #252b1f' }}>
-              <div style={{ fontSize:'24px', marginBottom:'10px' }}>{card.icon}</div>
-              <div style={{ fontFamily:"'Fraunces', serif", fontSize:'24px',
-                fontWeight:'700', color:card.color }}>{card.value}</div>
-              <div style={{ fontSize:'12px', color:'#5a6355', marginTop:'4px' }}>{card.label}</div>
+        {/* Left — greeting + info */}
+        <div style={{ padding: '32px 28px', borderRight: '1px solid #252b1f' }}>
+          <h1 style={{ fontFamily: "'Fraunces', serif", fontSize: '26px',
+            fontWeight: '700', marginBottom: '6px' }}>
+            {greeting}, {firstName} 👋
+          </h1>
+          <p style={{ color: '#5a6355', fontSize: '13px', marginBottom: '32px' }}>
+            Build your focus. Grow your skills.
+          </p>
+
+          {/* Quick tips */}
+          <div style={{ background: '#141710', borderRadius: '12px',
+            padding: '20px', border: '1px solid #252b1f', marginBottom: '16px' }}>
+            <div style={{ fontSize: '10px', fontFamily: "'DM Mono', monospace",
+              color: '#6db882', letterSpacing: '1.5px', marginBottom: '12px' }}>
+              🪺 HOW POMODORO WORKS
             </div>
-          ))}
+            {[
+              { icon: '▶', text: 'Press Start to begin a 25-min focus session' },
+              { icon: '☕', text: 'Take a 5-min break when the timer ends' },
+              { icon: '🔄', text: 'Repeat — every session is saved to your stats' },
+              { icon: '🔥', text: 'Complete sessions daily to build your streak' },
+            ].map(t => (
+              <div key={t.text} style={{ display: 'flex', gap: '12px',
+                alignItems: 'flex-start', marginBottom: '10px' }}>
+                <span style={{ color: '#4a7c59', fontSize: '14px', flexShrink: 0 }}>{t.icon}</span>
+                <span style={{ fontSize: '13px', color: '#8fad7c', lineHeight: '1.5' }}>{t.text}</span>
+              </div>
+            ))}
+          </div>
+
+          <div style={{ background: '#141710', borderRadius: '12px',
+            padding: '20px', border: '1px solid #252b1f' }}>
+            <div style={{ fontSize: '10px', fontFamily: "'DM Mono', monospace",
+              color: '#6db882', letterSpacing: '1.5px', marginBottom: '12px' }}>
+              ✅ SYSTEM STATUS
+            </div>
+            <p style={{ fontSize: '13px', color: '#8fad7c', lineHeight: '1.8' }}>
+              Backend API ✅ &nbsp;·&nbsp; Database ✅<br/>
+              Auth ✅ &nbsp;·&nbsp; Session tracking ✅<br/>
+              Streak system ✅ &nbsp;·&nbsp; Stats API ✅
+            </p>
+            <p style={{ fontSize: '12px', color: '#5a6355', marginTop: '8px' }}>
+              Logged in as <strong style={{ color: '#e8e0cc' }}>{email}</strong>
+            </p>
+          </div>
         </div>
 
-        <div style={{ background:'#1a1e16', borderRadius:'12px', padding:'24px',
-          border:'1px solid #4a7c5922' }}>
-          <div style={{ fontSize:'11px', fontFamily:"'DM Mono', monospace",
-            color:'#6db882', letterSpacing:'1.5px', marginBottom:'12px' }}>
-            🪺 YOUR NEST IS READY
+        {/* Right — Pomodoro Timer */}
+        <div style={{ padding: '32px 24px', background: '#0e110c',
+          display: 'flex', flexDirection: 'column' }}>
+          <div style={{ fontSize: '10px', fontFamily: "'DM Mono', monospace",
+            color: '#5a6355', letterSpacing: '1.5px', marginBottom: '24px' }}>
+            POMODORO TIMER
           </div>
-          <p style={{ fontSize:'15px', color:'#8fad7c', lineHeight:'1.7' }}>
-            Backend API ✅ &nbsp;·&nbsp; Database ✅ &nbsp;·&nbsp; Auth ✅ &nbsp;·&nbsp; Onboarding ✅
-          </p>
-          {email && (
-            <p style={{ fontSize:'13px', color:'#5a6355', marginTop:'8px' }}>
-              Logged in as <strong style={{ color:'#e8e0cc' }}>{email}</strong>
-            </p>
-          )}
+          <Suspense fallback={<div style={{ color: '#5a6355' }}>Loading timer...</div>}>
+            <PomodoroTimer />
+          </Suspense>
         </div>
       </div>
     </div>
