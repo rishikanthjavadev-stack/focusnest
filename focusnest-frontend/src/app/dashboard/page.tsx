@@ -62,6 +62,7 @@ export default function DashboardPage() {
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           {email && <span style={{ fontSize: '12px', color: '#5a6355' }}>{email}</span>}
+          <button onClick={() => router.push("/notes")} style={{ padding:"7px 14px", borderRadius:"8px", background:"transparent", border:`1px solid ${'#252b1f'}`, color:"#8fad7c", cursor:"pointer", fontSize:"12px", marginRight:"8px" }}>📝 Notes</button>
           <button onClick={logout} style={{ padding: '7px 14px', borderRadius: '8px',
             background: 'transparent', border: '1px solid #252b1f',
             color: '#5a6355', cursor: 'pointer', fontSize: '12px' }}>Sign out</button>
@@ -135,3 +136,4 @@ export default function DashboardPage() {
     </div>
   );
 }
+// Notes navigation already handled by router in notes page
