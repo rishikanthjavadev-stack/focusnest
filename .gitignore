@@ -1,0 +1,17 @@
+target/
+*.class
+*.jar
+*.war
+node_modules/
+.next/
+dist/
+build/
+.env
+.env.local
+.env.production
+application-local.yml
+.idea/
+.vscode/
+*.iml
+.DS_Store
+*.log
