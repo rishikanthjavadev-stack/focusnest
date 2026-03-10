@@ -19,4 +19,8 @@ public interface StudySessionRepository extends JpaRepository<StudySession, Long
            "AND s.status = 'COMPLETED' AND s.sessionType = 'FOCUS' " +
            "AND s.actualStart >= :from AND s.actualStart <= :to")
     Integer countCompletedInRange(Long userId, LocalDateTime from, LocalDateTime to);
+
+    @Query("SELECT s FROM StudySession s WHERE s.userId = :userId " +
+           "AND s.status = 'COMPLETED' AND s.actualStart >= :from AND s.actualStart <= :to")
+    List<StudySession> findCompletedInRange(Long userId, LocalDateTime from, LocalDateTime to);
 }
