@@ -13,6 +13,7 @@ const NAV = [
   { path:'/timer',     icon:'⏱', label:'Timer'      },
   { path:'/notes',     icon:'📝', label:'Notes'      },
   { path:'/analytics', icon:'📊', label:'Analytics'  },
+  { path:'/profile',   icon:'👤', label:'Profile'    },
 ];
 
 export default function Sidebar() {

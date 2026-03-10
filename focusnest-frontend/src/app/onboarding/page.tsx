@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
 const SKILLS = ['Machine Learning','Deep Learning','Web Development','Data Science',
@@ -11,11 +11,20 @@ const SLOTS = ['Early Morning (5–8 AM)','Morning (8–11 AM)','Afternoon (12�
 
 export default function OnboardingPage() {
   const router = useRouter();
-  const [step, setStep] = useState(0);
-  const [role, setRole] = useState('');
-  const [skills, setSkills] = useState<string[]>([]);
+  const [step, setStep]       = useState(0);
+  const [role, setRole]       = useState('');
+  const [skills, setSkills]   = useState<string[]>([]);
   const [dailyTime, setDailyTime] = useState(60);
-  const [slots, setSlots] = useState<string[]>([]);
+  const [slots, setSlots]     = useState<string[]>([]);
+
+  useEffect(() => {
+    // If onboarding already done, go to dashboard
+    const existing = localStorage.getItem('fn_onboarding');
+    if (existing) { router.replace('/dashboard'); return; }
+    // If not logged in, go to login
+    const token = localStorage.getItem('fn_access');
+    if (!token) { router.replace('/login'); }
+  }, [router]);
 
   const toggle = (arr: string[], val: string, set: (v: string[]) => void) =>
     set(arr.includes(val) ? arr.filter(x => x !== val) : [...arr, val]);
@@ -57,7 +66,7 @@ export default function OnboardingPage() {
               <h2 style={{ fontFamily: "'Fraunces', serif", fontSize: '22px', fontWeight: '700', color: '#e8e0cc', marginBottom: '4px' }}>
                 Welcome to <em style={{ color: '#6db882' }}>FocusNest</em>
               </h2>
-              <p style={{ fontSize: '13px', color: '#5a6355', marginBottom: '22px' }}>Build your focus. Grow your skills.</p>
+              <p style={{ fontSize: '13px', color: '#5a6355', marginBottom: '22px' }}>Just 3 quick questions — then you're in!</p>
               <p style={{ fontSize: '11px', fontWeight: '700', letterSpacing: '1.5px', color: '#5a6355', fontFamily: "'DM Mono',monospace", marginBottom: '10px' }}>I AM A</p>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
                 {['Student','Researcher','Working Professional','Freelancer'].map(r => (
