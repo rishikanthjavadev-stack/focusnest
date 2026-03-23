@@ -10,6 +10,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/users")
@@ -46,11 +47,11 @@ public class UserController {
             if (req.getCurrentPassword() == null ||
                 !passwordEncoder.matches(req.getCurrentPassword(), user.getPasswordHash())) {
                 return ResponseEntity.badRequest()
-                    .body(java.util.Map.of("message", "Current password is incorrect"));
+                    .body(Map.of("message", "Current password is incorrect"));
             }
             if (req.getNewPassword().length() < 8) {
                 return ResponseEntity.badRequest()
-                    .body(java.util.Map.of("message", "Password must be at least 8 characters"));
+                    .body(Map.of("message", "Password must be at least 8 characters"));
             }
             user.setPasswordHash(passwordEncoder.encode(req.getNewPassword()));
         }
@@ -59,14 +60,25 @@ public class UserController {
         return ResponseEntity.ok(toResponse(user));
     }
 
+    @PatchMapping("/me/onboarding")
+    public ResponseEntity<?> completeOnboarding(
+            @AuthenticationPrincipal UserDetails userDetails) {
+        User user = userRepo.findByEmail(userDetails.getUsername())
+            .orElseThrow(() -> new UsernameNotFoundException("Not found"));
+        user.setOnboardingDone(true);
+        userRepo.save(user);
+        return ResponseEntity.ok(Map.of("message", "Onboarding complete"));
+    }
+
     private UserResponse toResponse(User user) {
         return new UserResponse(
-            user.getId(), user.getName(), user.getEmail(),
-            user.getRole() != null ? user.getRole().name() : "STUDENT",
-            user.getStreakCount(),
-            user.getLastStudyDate(),
-            user.getCreatedAt() != null ? user.getCreatedAt().toLocalDate().toString() : null,
-            user.getIsAdmin() != null && user.getIsAdmin()
-        );
+           user.getId(), user.getName(), user.getEmail(),
+        user.getRole() != null ? user.getRole().name() : "STUDENT",
+        user.getStreakCount(),
+        user.getLastStudyDate(),
+        user.getCreatedAt() != null ? user.getCreatedAt().toLocalDate().toString() : null,
+        user.getIsAdmin() != null && user.getIsAdmin(),
+        user.getOnboardingDone() != null && user.getOnboardingDone()
+    );   
     }
 }

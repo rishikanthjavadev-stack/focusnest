@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import api from '@/services/api';
 
 const SKILLS = ['Machine Learning','Deep Learning','Web Development','Data Science',
   'Python','JavaScript','System Design','Cloud Computing','DevOps','Cybersecurity',
@@ -18,10 +19,32 @@ export default function OnboardingPage() {
   const [slots, setSlots]     = useState<string[]>([]);
 
   useEffect(() => {
-    // If onboarding already done, go to dashboard
     const existing = localStorage.getItem('fn_onboarding');
     if (existing) { router.replace('/dashboard'); return; }
-    // If not logged in, go to login
+
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get('code');
+
+    if (code) {
+      fetch('http://localhost:8080/api/auth/token/exchange', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.accessToken) {
+          localStorage.setItem('fn_access', data.accessToken);
+          localStorage.setItem('fn_refresh', data.refreshToken);
+          window.history.replaceState({}, '', '/onboarding');
+        } else {
+          router.replace('/login');
+        }
+      })
+      .catch(() => router.replace('/login'));
+      return;
+    }
+
     const token = localStorage.getItem('fn_access');
     if (!token) { router.replace('/login'); }
   }, [router]);
@@ -31,8 +54,13 @@ export default function OnboardingPage() {
 
   const canNext = [role !== '', skills.length > 0, slots.length > 0];
 
-  const finish = () => {
+  const finish = async () => {
     localStorage.setItem('fn_onboarding', JSON.stringify({ role, skills, dailyTime, slots }));
+    try {
+      await api.patch('/users/me/onboarding');
+    } catch (e) {
+      console.error('Failed to mark onboarding done', e);
+    }
     router.push('/dashboard');
   };
 
@@ -66,7 +94,7 @@ export default function OnboardingPage() {
               <h2 style={{ fontFamily: "'Fraunces', serif", fontSize: '22px', fontWeight: '700', color: '#e8e0cc', marginBottom: '4px' }}>
                 Welcome to <em style={{ color: '#6db882' }}>FocusNest</em>
               </h2>
-              <p style={{ fontSize: '13px', color: '#5a6355', marginBottom: '22px' }}>Just 3 quick questions — then you're in!</p>
+              <p style={{ fontSize: '13px', color: '#5a6355', marginBottom: '22px' }}>Just 3 quick questions — then you&apos;re in!</p>
               <p style={{ fontSize: '11px', fontWeight: '700', letterSpacing: '1.5px', color: '#5a6355', fontFamily: "'DM Mono',monospace", marginBottom: '10px' }}>I AM A</p>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
                 {['Student','Researcher','Working Professional','Freelancer'].map(r => (

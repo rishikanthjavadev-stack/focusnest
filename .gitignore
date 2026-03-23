@@ -15,3 +15,4 @@ application-local.yml
 *.iml
 .DS_Store
 *.log
+focusnest-backend/src/main/resources/application-local.yml

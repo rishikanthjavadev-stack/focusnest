@@ -24,3 +24,5 @@ public interface StudySessionRepository extends JpaRepository<StudySession, Long
            "AND s.status = 'COMPLETED' AND s.actualStart >= :from AND s.actualStart <= :to")
     List<StudySession> findCompletedInRange(Long userId, LocalDateTime from, LocalDateTime to);
 }
+// already has needed methods
+// already has needed methods

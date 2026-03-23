@@ -7,6 +7,8 @@ import java.util.List;
 
 public interface NoteRepository extends JpaRepository<Note, Long> {
 
+    Integer countByUserId(Long userId);
+
     List<Note> findByUserIdOrderByIsPinnedDescCreatedAtDesc(Long userId);
 
     @Query("SELECT n FROM Note n WHERE n.userId = :userId AND " +

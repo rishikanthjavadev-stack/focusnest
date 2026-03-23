@@ -1,6 +1,7 @@
 package com.focusnest.config;
 
 import com.focusnest.security.*;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.*;
 import org.springframework.security.authentication.*;
@@ -19,14 +20,14 @@ import java.util.List;
 @EnableWebSecurity
 public class SecurityConfig {
 
-    private final JwtAuthFilter jwtAuthFilter;
+    private final JwtAuthFilter       jwtAuthFilter;
     private final OAuth2SuccessHandler oAuth2SuccessHandler;
 
     @Value("${app.cors-origins}")
     private String corsOrigins;
 
     public SecurityConfig(JwtAuthFilter jwtAuthFilter, OAuth2SuccessHandler oAuth2SuccessHandler) {
-        this.jwtAuthFilter       = jwtAuthFilter;
+        this.jwtAuthFilter        = jwtAuthFilter;
         this.oAuth2SuccessHandler = oAuth2SuccessHandler;
     }
 
@@ -39,6 +40,13 @@ public class SecurityConfig {
             .authorizeHttpRequests(a -> a
                 .requestMatchers("/auth/**", "/oauth2/**", "/actuator/health").permitAll()
                 .anyRequest().authenticated()
+            )
+            .exceptionHandling(e -> e
+                .authenticationEntryPoint((request, response, ex) -> {
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    response.setContentType("application/json");
+                    response.getWriter().write("{\"message\":\"Unauthorized\"}");
+                })
             )
             .oauth2Login(o -> o
                 .authorizationEndpoint(e -> e.baseUri("/oauth2/authorize"))
@@ -61,7 +69,8 @@ public class SecurityConfig {
         return s;
     }
 
-    @Bean public PasswordEncoder passwordEncoder() { return new BCryptPasswordEncoder(); }
+    @Bean
+    public PasswordEncoder passwordEncoder() { return new BCryptPasswordEncoder(); }
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration c)

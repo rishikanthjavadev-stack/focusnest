@@ -46,3 +46,15 @@ logging:
   level:
     com.focusnest: DEBUG
     org.springframework.security: INFO
+
+mail:
+  host: smtp.gmail.com
+  port: 587
+  username: ${MAIL_USERNAME}
+  password: ${MAIL_PASSWORD}
+  properties:
+    mail:
+      smtp:
+        auth: true
+        starttls:
+          enable: true

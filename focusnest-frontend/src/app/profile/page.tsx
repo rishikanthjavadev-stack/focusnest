@@ -85,7 +85,7 @@ export default function ProfilePage() {
   };
 
   const handleClearData = () => {
-    if (!confirm('Clear your onboarding preferences? You will be sent through onboarding again.')) return;
+    if (!confirm('Reset learning preferences? You will go through onboarding again.')) return;
     localStorage.removeItem('fn_onboarding');
     router.push('/onboarding');
   };

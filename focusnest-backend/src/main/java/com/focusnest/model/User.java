@@ -33,6 +33,8 @@ public class User {
     private Boolean onboardingDone = false;
     private LocalDateTime createdAt;
     private Boolean isAdmin = false;
+    private String resetToken;
+    private java.time.LocalDateTime resetTokenExpiry;
     private LocalDateTime updatedAt;
 
     public User() {}
@@ -68,8 +70,12 @@ public class User {
     public String getAvatarUrl()         { return avatarUrl; }
     public Boolean getOnboardingDone()   { return onboardingDone; }
     public LocalDateTime getCreatedAt()  { return createdAt; }
-    public Boolean getIsAdmin()          { return isAdmin; }
-    public void setIsAdmin(Boolean v)     { isAdmin = v; }
+    public Boolean getIsAdmin()                              { return isAdmin; }
+    public void setIsAdmin(Boolean v)                        { isAdmin = v; }
+    public String getResetToken()                            { return resetToken; }
+    public void setResetToken(String v)                      { resetToken = v; }
+    public java.time.LocalDateTime getResetTokenExpiry()     { return resetTokenExpiry; }
+    public void setResetTokenExpiry(java.time.LocalDateTime v) { resetTokenExpiry = v; }
     public LocalDateTime getUpdatedAt()  { return updatedAt; }
 
     public void setId(Long v)                  { id = v; }

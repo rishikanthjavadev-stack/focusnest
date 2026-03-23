@@ -25,6 +25,8 @@ export default function RegisterPage() {
       localStorage.setItem('fn_user', JSON.stringify({
         id: data.userId, name: data.name, email: data.email,
       }));
+      // New users go through onboarding once
+      localStorage.removeItem('fn_onboarding');
       router.push('/onboarding');
     } catch (err: unknown) {
       const e = err as { response?: { data?: { message?: string } } };

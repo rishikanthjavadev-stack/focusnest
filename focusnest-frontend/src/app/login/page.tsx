@@ -20,8 +20,13 @@ function LoginForm() {
       localStorage.setItem('fn_user', JSON.stringify({
         id: data.userId, name: data.name, email: data.email,
       }));
-      const onboarding = localStorage.getItem('fn_onboarding');
-      router.push(onboarding ? '/dashboard' : '/onboarding');
+      // If no onboarding set, create a default so existing users skip it
+      if (!localStorage.getItem('fn_onboarding')) {
+        localStorage.setItem('fn_onboarding', JSON.stringify({
+          role: 'Working Professional', skills: [], dailyTime: 60, slots: []
+        }));
+      }
+      router.push('/dashboard');
     } catch (err: unknown) {
       const e = err as { response?: { data?: { message?: string } } };
       setError(e.response?.data?.message || 'Invalid email or password');
@@ -102,6 +107,10 @@ function LoginForm() {
           </div>
 
           <p style={{ textAlign:'center', fontSize:'13px', color:'#5a6355', marginTop:'20px' }}>
+            <Link href="/forgot-password" style={{ color:'#6db882', fontWeight:'600' }}>
+              Forgot password?
+            </Link>
+            {'  ·  '}
             No account?{' '}
             <Link href="/register" style={{ color:'#4a7c59', fontWeight:'600' }}>Create one</Link>
           </p>
