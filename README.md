@@ -12,6 +12,52 @@
 
 ---
 
+## 💡 Why FocusNest?
+
+We live in the most distracted era in human history. Between endless notifications, social media, and information overload, deep focused work has become a rare skill — and the people who can do it consistently have a massive advantage.
+
+**FocusNest was built to solve this.**
+
+Most productivity apps treat focus as a simple timer problem. FocusNest goes further — it combines the proven **Pomodoro technique** with **AI-powered coaching** that actually understands you. It learns your study patterns, tracks your streaks, and gives you personalized advice based on how you actually work — not generic tips.
+
+Whether you're a student preparing for exams, a researcher managing deep work sessions, or a working professional trying to carve out learning time in a busy schedule — FocusNest adapts to your role and goals.
+
+---
+
+## 🎯 Who Is This For?
+
+| User | How FocusNest Helps |
+|---|---|
+| 🎓 **Students** | Track study sessions, build daily streaks, get AI guidance on what to focus on next |
+| 🔬 **Researchers** | Manage deep work blocks, capture insights in distraction-free notes, monitor weekly output |
+| 💼 **Working Professionals** | Fit structured learning into busy schedules with daily goals and smart time slots |
+| 🧑‍💻 **Freelancers** | Stay accountable to personal growth goals without a team or manager |
+
+---
+
+## 🧠 The Problem It Solves
+
+1. **No accountability** — Most people start strong but lose momentum within a week. FocusNest's streak system makes consistency visible and rewarding.
+
+2. **Generic advice** — Generic productivity tips don't account for your role, skill set, or current progress. FocusNest's AI coach knows your context and gives advice that actually applies to you.
+
+3. **Fragmented tools** — You shouldn't need five different apps for timer, notes, analytics, and reminders. FocusNest brings it all into one clean, focused interface.
+
+4. **No insight into progress** — Without data, it's hard to know if you're actually improving. FocusNest tracks every session and surfaces weekly insights so you can see your growth.
+
+---
+
+## ✨ Key Highlights
+
+- 🤖 **AI Study Coach** powered by Anthropic Claude — gives personalized, context-aware study recommendations based on your actual session data
+- ⏱ **Pomodoro Timer** with intelligent streak tracking — builds deep work habits one session at a time
+- 📝 **Distraction-free Notes** with auto-save — capture ideas without leaving your focus zone
+- 📊 **Learning Analytics** — weekly breakdowns, daily insights, and goal progress to keep you on track
+- 🔐 **Secure Auth** — sign in with Google, GitHub, or email with enterprise-grade JWT security
+- 🎯 **Personalized Onboarding** — tells FocusNest your role, skills, and daily goals so it can tailor the experience from day one
+
+---
+
 ## 📸 Screenshots
 
 ### 🏠 Dashboard
@@ -81,54 +127,48 @@
 
 ```mermaid
 flowchart TB
-    subgraph Client["🌐 Next.js 16 Frontend"]
+    subgraph Client["Next.js 16 Frontend"]
         UI[App Router Pages]
         AI_UI[AI Coach Chat UI]
         Timer[Pomodoro Engine]
         Analytics[Analytics Dashboard]
     end
 
-    subgraph Backend["☕ Spring Boot 3.2.3 API"]
-        Auth[Auth Controller\nJWT + OAuth2]
-        UserSvc[User Service]
-        AISvc[AI Service\nClaude Integration]
-        SessionSvc[Session Service\nStreak Engine]
-        MailSvc[Mail Service\nGmail SMTP]
-        AdminSvc[Admin Service]
+    subgraph Backend["Spring Boot 3.2.3 API"]
+        Auth[Auth Controller JWT and OAuth2]
+        AISvc[AI Service Claude Integration]
+        SessionSvc[Session Service Streak Engine]
+        MailSvc[Mail Service Gmail SMTP]
     end
 
-    subgraph Security["🔒 Security Layer"]
+    subgraph Security["Security Layer"]
         JWTFilter[JWT Auth Filter]
-        OAuth2[OAuth2 Success Handler]
+        OAuth2Handler[OAuth2 Success Handler]
         TokenStore[One-Time Code Store]
     end
 
-    subgraph External["🌍 External Services"]
-        Claude[Anthropic Claude API\nLLM Inference]
+    subgraph External["External Services"]
+        Claude[Anthropic Claude API]
         Google[Google OAuth2]
         GitHub[GitHub OAuth2]
         Gmail[Gmail SMTP]
     end
 
-    subgraph Data["🗄 Data Layer"]
-        MySQL[(MySQL 8\nfocusnest DB)]
+    subgraph Data["Data Layer"]
+        MySQL[(MySQL 8)]
     end
 
     UI --> Auth
     AI_UI --> AISvc
     Timer --> SessionSvc
-    Analytics --> SessionSvc
-
     Auth --> JWTFilter
-    Auth --> OAuth2
-    OAuth2 --> TokenStore
-
+    Auth --> OAuth2Handler
+    OAuth2Handler --> TokenStore
     AISvc --> Claude
     Auth --> Google
     Auth --> GitHub
     MailSvc --> Gmail
-
-    UserSvc --> MySQL
+    Auth --> MySQL
     SessionSvc --> MySQL
     AISvc --> MySQL
 ```
@@ -146,23 +186,23 @@ flowchart TD
     D -- No --> E[401 Unauthorized]
     D -- Yes --> F[Generate JWT pair]
 
-    B -- Google/GitHub --> G[GET /oauth2/authorize]
+    B -- Google or GitHub --> G[GET /oauth2/authorize]
     G --> H[Provider consent screen]
     H --> I[OAuth2 callback]
     I --> J[OAuth2SuccessHandler]
     J --> K{User in DB?}
     K -- No --> L[(Create user record)]
     K -- Yes --> M[(Load user)]
-    L --> N[Generate one-time code\n2 min TTL in-memory]
+    L --> N[Generate one-time code 2min TTL]
     M --> N
-    N --> O[Redirect frontend\n?code=uuid]
+    N --> O[Redirect frontend with code param]
     O --> P[POST /auth/token/exchange]
     P --> F
 
-    F --> Q[Access Token 15min\nRefresh Token 7days]
-    Q --> R{onboarding_done?}
-    R -- false --> S[/onboarding]
-    R -- true --> T[/dashboard]
+    F --> Q[Access Token 15min and Refresh Token 7days]
+    Q --> R{onboarding done?}
+    R -- false --> S[Onboarding page]
+    R -- true --> T[Dashboard page]
 
     S --> U[Complete 3-step onboarding]
     U --> V[PATCH /users/me/onboarding]
@@ -180,47 +220,46 @@ sequenceDiagram
     participant Frontend
     participant AIController
     participant AIService
-    participant Claude as Anthropic Claude API
+    participant Claude as Claude API
     participant MySQL
 
-    User->>Frontend: Opens AI Coach, sends message
-    Frontend->>AIController: POST /ai/chat {message, conversationHistory}
-    AIController->>AIService: processChat(userId, message)
-    AIService->>MySQL: Fetch user stats, streak, recent sessions
-    MySQL->>AIService: {todaySeconds, streakDays, skills, role}
-    AIService->>Claude: POST /v1/messages\nsystem: "You are a study coach for {role}..."\ncontext: {userStats}\nuser: {message}
+    User->>Frontend: Opens AI Coach sends message
+    Frontend->>AIController: POST /ai/chat with message and history
+    AIController->>AIService: processChat userId and message
+    AIService->>MySQL: Fetch user stats streak sessions
+    MySQL->>AIService: todaySeconds streakDays skills role
+    AIService->>Claude: POST /v1/messages with system prompt and context
     Claude->>AIService: AI response with personalized advice
-    AIService->>AIController: ChatResponse {reply}
-    AIController->>Frontend: 200 {message: "Based on your 3-day streak..."}
+    AIService->>AIController: ChatResponse reply
+    AIController->>Frontend: 200 with message
     Frontend->>User: Renders AI response in chat UI
 ```
 
 ---
 
-## ⏱ Pomodoro & Streak Engine
+## ⏱ Pomodoro and Streak Engine
 
 ```mermaid
 flowchart TD
     A([User starts session]) --> B[25 min focus timer]
     B --> C{Timer complete?}
     C -- No --> B
-    C -- Yes --> D[POST /sessions\n{durationSeconds, type}]
+    C -- Yes --> D[POST /sessions]
     D --> E[(Save to study_sessions)]
     E --> F[Streak calculation]
-    F --> G{Last study date\n= today?}
+    F --> G{Last study date = today?}
     G -- Yes --> H[Streak maintained]
-    G -- No --> I{Last study date\n= yesterday?}
-    I -- Yes --> J[Streak + 1]
+    G -- No --> I{Last study date = yesterday?}
+    I -- Yes --> J[Streak plus 1]
     I -- No --> K[Streak reset to 1]
     H --> L[Update user stats]
     J --> L
     K --> L
-    L --> M{Session count\nthis round}
+    L --> M{Session count this round}
     M -- Less than 4 --> N[5 min short break]
     M -- 4th session --> O[15 min long break]
     N --> A
     O --> A
-    L --> P[Feed data to AI context\non next coach query]
 ```
 
 ---
@@ -235,19 +274,19 @@ sequenceDiagram
     participant Backend
     participant MySQL
 
-    Browser->>Frontend: Navigate to /dashboard
-    Frontend->>Frontend: Read fn_access from localStorage
-    Frontend->>Backend: GET /users/me\nAuthorization: Bearer {accessToken}
+    Browser->>Frontend: Navigate to dashboard
+    Frontend->>Frontend: Read token from localStorage
+    Frontend->>Backend: GET /users/me with Bearer token
     Backend->>JWTFilter: Intercept request
-    JWTFilter->>JWTFilter: Validate HS512 signature\nCheck expiry
+    JWTFilter->>JWTFilter: Validate HS512 signature and expiry
     alt Token valid
         JWTFilter->>Backend: Set SecurityContext
-        Backend->>MySQL: findByEmail(subject)
+        Backend->>MySQL: findByEmail subject
         MySQL->>Backend: User entity
         Backend->>Frontend: 200 UserResponse
     else Token expired
         JWTFilter->>Frontend: 401 Unauthorized
-        Frontend->>Backend: POST /auth/refresh\n{refreshToken}
+        Frontend->>Backend: POST /auth/refresh with refreshToken
         Backend->>Frontend: New accessToken
         Frontend->>Backend: Retry original request
     end
